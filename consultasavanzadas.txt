@@ -1,0 +1,129 @@
+// 1)
+
+select *
+from investigador
+where apellido like 'C%' and sexo='FEMENINO'
+
+select *
+from investigador
+where substr(apellido,0,1)='C' and sexo='FEMENINO'
+
+// 2)
+
+select razonsocial, direccion
+from INST_FINAN
+where razonsocial like '%DESARROLLO%
+order by razonsocial
+
+// 3)
+
+select apellido, nombre, salario, fechanaci
+from investigador
+where (extract(month from fechanaci)=05 or extract(month from fechanaci)=03) and (salario >3000 or salario =3000)
+order by apellido
+
+select *
+from investigador
+where (extract(month from fechanaci)=05 or extract(month from fechanaci)=03) and salario >3000
+
+// 4)
+
+select apellido, nombre
+from investigador
+where ci=ci_supervisor
+order by apellido
+
+// 5)
+
+select d.nombre_d
+from investigador i, departamento d
+where i.coddepar=d.coddepar and (i.salario = 2000 or i.salario = 3000) and (extract(year from fechanaci)>=1990 or extract(year from fechanaci)<=1997)
+order by d.nombre_d
+
+select i.*
+from investigador i, departamento d
+where i.coddepar=d.coddepar and d.nombre_d='COMUNICACIÓN' 
+order by d.nombre_d
+
+select i.*
+from investigador i, departamento d
+where i.coddepar=d.coddepar and d.nombre_d='CONTROL DE GESTION' 
+order by d.nombre_d
+
+select * from departamento
+order by nombre_d
+
+// 6)
+
+select  i.apellido, i.nombre ,(select count(*) from dependiente dp where i.ci=dp.ci and (dp.parentesco='HIJO' or dp.parentesco='HIJA')) as NROHIJOS
+from departamento d,investigador i
+where d.coddepar=i.coddepar and d.ci_jefe = i.ci and (select count(*) from dependiente dp where i.ci=dp.ci and (dp.parentesco='HIJO' or dp.parentesco='HIJA'))>0
+order by i.apellido
+
+// 7)
+
+select  i.apellido, i.nombre ,(select count(*) from dependiente dp where i.ci=dp.ci and (dp.parentesco='HIJO' or dp.parentesco='HIJA')) as NROHIJOS, d.nombre_d
+from departamento d,investigador i
+where d.coddepar=i.coddepar and d.ci_jefe = i.ci and (select count(*) from dependiente dp where i.ci=dp.ci and (dp.parentesco='HIJO' or dp.parentesco='HIJA'))>0
+order by i.apellido
+
+//8
+
+select  p.nom_pry, p.presupuesto, (select count(*) from investigador i where i.coddepar=p.coddepar and i.sexo = 'FEMENINO') as cant
+from proyecto p
+where  (select count(*) from investigador i where i.coddepar=p.coddepar and i.sexo = 'FEMENINO') = 2
+
+select p.nom_pry, p.presupuesto, p.coddepar ,i.*
+from proyecto p, investigador i
+where i.coddepar=p.coddepar and p.nom_pry='MINERIA' and i.sexo = 'FEMENINO'
+
+//9
+
+select i.apellido,i.nombre, (select count(*) from dependiente dp where i.ci=dp.ci and (dp.parentesco='HIJA' or dp.parentesco='HIJO')) as NROHIJOS
+from departamento d, investigador i
+where d.coddepar = i.coddepar and i.ci = d.ci_jefe and (select count(*) from dependiente dp where i.ci=dp.ci and (dp.parentesco='HIJA' or dp.parentesco='HIJO')) > 0
+order by i.apellido
+
+//10
+
+select apellido, nombre ,(2019 - extract(year from fechanaci))
+from investigador
+where ci=ci_supervisor and (2019 - extract(year from fechanaci)) = (select min(2019-extract(year from fechanaci)) from investigador where ci=ci_supervisor) 
+
+
+select ci,nombre, (2019-extract(year from fechanaci))
+from investigador
+
+select min(2019 - extract(year from fechanaci)) from investigador
+
+//11
+
+select d.nombre_d, i.salario
+from departamento d, investigador i
+where d.coddepar = i.coddepar and i.salario = (select min(salario) from investigador where d.coddepar = coddepar)
+order by nombre_d
+
+select min(i.salario) from investigador i
+
+//12
+
+select p.nom_pry,p.coddepar, d.ci_jefe, d.coddepar, i.coddepar
+from departamento d, proyecto p, investigador i
+where p.coddepar=d.coddepar and i.ci = d.ci_jefe
+order by p.nom_pry
+
+select p.nom_pry,p.coddepar,i.ci,i.nombre,i.coddepar,d.coddepar,d.ci_jefe
+from departamento d, investigador i, proyecto p
+where d.coddepar=i.coddepar and i.ci= d.ci_jefe and p.coddepar=d.coddepar
+order by p.nom_pry
+
+select * from proyecto
+order by nom_pry
+
+select * from investigador where coddepar = 'D3'
+
+//13
+
+select i.nombre, dp.nombredep, dp.parentesco
+from investigador i, dependiente dp
+where i.ci=dp.ci and (dp.parentesco ='ESPOSA' or dp.parentesco ='ESPOSO') and (select count(*) from dependiente dp where i.ci=dp.ci and (dp.parentesco='HIJO' or dp.parentesco='HIJA'))=0
