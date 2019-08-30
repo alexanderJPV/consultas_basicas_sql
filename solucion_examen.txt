@@ -1,0 +1,57 @@
+//-----------------1
+
+select p.NOM_PRY, tmp.monto
+from proyecto p, (select f.codpry, f.monto from financia f, inst_finan i where f.CODINS = i.CODINS and i.RAZONSOCIAL='CENTRO DE COMPETITIVIDAD E INNOVACIÓN DEL ESTADO DE AGUASCALIENTES') tmp
+where  p.CODPRY = tmp.CODPRY
+order by P.NOM_PRY
+
+//-----------------2
+
+select i.apellido, i.nombre , p.nom_pry
+from investigador i, proyecto p
+where p.CI_RESPONSABLE = i.CI and i.SEXO = 'FEMENINO' and p.PRESUPUESTO > 3000
+order by i.APELLIDO
+
+//----------------3
+
+    //primer forma
+select i.RAZONSOCIAL, sum(f.monto) as MONTOFINAN
+from inst_finan i,financia f
+where i.codins=f.codins
+group by i.RAZONSOCIAL
+order by i.RAZONSOCIAL
+    //segunda forma
+select i.RAZONSOCIAL, (select sum(f.monto) from financia f where i.codins=f.codins) as MONTOFINAN
+from inst_finan i
+where (select sum(f.monto) from financia f where i.codins=f.codins) >0
+order by i.RAZONSOCIAL
+
+//----------------4
+
+select p.NOM_PRY, p.PRESUPUESTO
+from proyecto p,(
+                select t.CODPRY, count(i.CI) as nro
+                from investigador i, trabaja_en t
+                where i.CI = t.CI and i.SEXO = 'FEMENINO'
+                group by t.CODPRY) tmp
+where p.CODPRY = tmp.CODPRY and tmp.nro>2
+order by p.NOM_PRY
+
+//-----------------5
+
+
+select distinct(p.NOM_PRY)
+from proyecto p, trabaja_en t, ( select  i.CI
+                     from investigador i inner join dependiente d on i.CI = d.CI
+                     where d.SEXO = 'FEMENINO') tmp
+where p.CODPRY = t.CODPRY and t.CI = tmp.CI
+order by p.NOM_PRY 
+
+//-----------------6
+
+select distinct i.RAZONSOCIAL, i.DIRECCION
+from inst_finan i 
+where  i.CODINS  not in (select f.CODINS from financia f)
+order by i.RAZONSOCIAL
+
+
