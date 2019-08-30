@@ -1,0 +1,106 @@
+
+//------------------------------------_1_
+//-----------contarr
+select i.ci,count(t.CI)
+from investigador i inner join trabaja_en t on i.CI=t.CI
+where i.CI=30
+group by i.ci
+
+
+create or replace function nroPry_x_Inv(xci in number)
+return number
+is
+    res number;
+begin
+    select count(t.CI) INTO res
+    from investigador i inner join trabaja_en t on i.CI=t.CI
+    where i.CI=xci;
+    return res;
+    EXCEPTION
+         WHEN NO_DATA_FOUND THEN
+    RETURN 0;
+end nroPry_x_Inv;
+
+//--------------sumarr
+select t.ci, sum(t.horas)
+from trabaja_en t
+where t.ci=30
+group by t.ci
+
+create or replace function totalCH_x_Inv(xci in number)
+return number
+is    
+    total number;
+begin    
+    select sum(t.horas) INTO total
+    from trabaja_en t 
+    where t.ci=xci;
+    IF total IS NULL THEN
+        total:=0;
+    END IF;
+    return total;
+end totalCH_x_Inv;
+EJERCICIO_1
+select  apellido, nombre, nroPry_x_Inv(ci) as NROPROYECTOS, totalCH_x_Inv(ci) as TOTALCH 
+from investigador
+order by apellido
+ 
+
+//------------------------------------_2_
+
+select count(t.ci) nro, sum(t.ci) total, t.ci
+from investigador i, trabaja_en t
+where i.ci=t.ci
+group by t.ci
+EJERCICIO_2
+select i.apellido,i.nombre, nvl(tmp.nro,0) as NROPROYECTOS, nvl(total,0) as TOTALCH
+from investigador i LEFT JOIN ( select count(t.ci) nro, sum(t.horas) total, t.ci
+                      from investigador i, trabaja_en t
+                      where i.ci=t.ci
+                      group by t.ci) tmp ON i.ci=tmp.ci
+order by i.apellido
+
+
+//------------------------------------_3_
+select d.CODDEPAR,count(i.CI)
+from investigador i, departamento d
+where i.CODDEPAR=d.CODDEPAR and i.SEXO='FEMENINO'
+group by d.CODDEPAR
+
+create or replace function nroInv_x_Dep(xcoddepar in varchar2,ivsw in number)
+return number
+is
+    res number;
+begin
+    IF ivsw=0 THEN
+        select count(i.CI) INTO res
+        from investigador i, departamento d
+        where i.CODDEPAR=d.CODDEPAR and d.CODDEPAR=xcoddepar and i.SEXO='FEMENINO';        
+    END IF;
+    
+    IF ivsw=1 THEN
+        select count(i.CI) INTO res
+        from investigador i, departamento d
+        where i.CODDEPAR=d.CODDEPAR and d.CODDEPAR=xcoddepar and i.SEXO='MASCULINO';        
+    END IF;
+    
+    IF ivsw=2 THEN
+        select count(i.CI) INTO res
+        from investigador i, departamento d
+        where i.CODDEPAR=d.CODDEPAR and d.CODDEPAR=xcoddepar;        
+    END IF;
+    
+   return res; 
+    
+end nroInv_x_Dep;
+
+select d.NOMBRE_D, nroInv_x_Dep(d.CODDEPAR,0) as INV_F, nroInv_x_Dep(d.CODDEPAR,1) as INV_M,nroInv_x_Dep(d.CODDEPAR,2) as TOTAL
+from departamento d
+order by d.NOMBRE_D
+
+Ejercicio_3
+
+select d.NOMBRE_D, (select count(i.CI) from investigador i where  i.CODDEPAR=d.CODDEPAR and i.SEXO='FEMENINO') as INV_F,(select count(i.CI) from investigador i where  i.CODDEPAR=d.CODDEPAR and i.SEXO='MASCULINO') as INV_M, (select count(i.CI) from investigador i where  i.CODDEPAR=d.CODDEPAR) as TOTAL
+from departamento d
+order by d.NOMBRE_D
+ 
