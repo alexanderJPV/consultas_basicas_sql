@@ -1,0 +1,75 @@
+------------------------------------------------A
+1-------------------con funcion
+create or replace function notapromedio_x_pry(xidproy in varchar2)
+return number
+is
+    resp number;
+begin
+    select avg(nota) into resp
+    from califica
+    where idproy=xidproy;
+    return resp;
+end notapromedio_x_pry;
+
+select p.DESCRIPCION, e.APELLIDO, e.NOMBRE, notapromedio_x_pry(p.IDPROY) as NOTAPROM
+from proyecto p, docente d, persona e
+where p.DOCRESP = d.CODIGO and d.CODIGO=e.CODIGO
+order by p.DESCRIPCION
+2---------------------sin funcion
+select p.DESCRIPCION, e.APELLIDO, e.NOMBRE, (select avg(c.nota) from califica c where c.IDPROY=p.IDPROY) as NOTAPROM 
+from proyecto p, docente d, persona e
+where p.DOCRESP = d.CODIGO and d.CODIGO=e.CODIGO
+order by p.DESCRIPCION
+
+-----------------------------------------------B
+3--------------------con funcion
+
+select Max(avg(c.NOTA))
+from proyecto p,califica c 
+where p.IDPROY=c.IDPROY
+group by p.IDAMB
+
+
+select max(nota_maxima(idproy))
+from proyecto 
+
+create or replace function nota_maxima(xidproy in varchar2)
+return number
+is
+ prom number;
+begin
+    select Max(avg(c.NOTA)) into prom
+    from proyecto p,califica c 
+    where p.IDPROY=c.IDPROY and p.IDPROY=xidproy
+    group by p.IDAMB;
+    return prom;
+end nota_maxima;
+create or replace function nro_proyectos(xidamb in varchar2)
+return number
+is
+ nro number;
+begin
+    select count(p.IDPROY) into nro
+    from proyecto p
+    where idamb=xidamb;
+    return nro;
+end nro_proyectos;
+
+select p.idamb,max(nota_maxima(p.idproy)),nro_proyectos(p.idamb) as NROPORYECTOS
+from proyecto p
+group by p.idamb
+order by p.idamb
+
+select p.idamb,p.idproy,nota_maxima(p.idproy) as NOTAMAXIMA,nro_proyectos(p.idamb) as NROPORYECTOS
+from proyecto p,(
+                    select t.idamb,max(nota_maxima(t.idproy)) as may
+                    from proyecto t
+                    GROUP by t.idamb) tmp
+where p.IDAMB=tmp.IDAMB and nota_maxima(p.idproy)=tmp.may 
+order by p.idamb
+
+4------------------sin funcion
+
+select  p.idamb,p.idproy,(select count(t.IDPROY) from proyecto t where t.idamb=p.idamb) as NROPORYECTOS
+from proyecto p
+order by p.idamb
